@@ -1,0 +1,3 @@
+sum_positive;a_positive,b_positive -> sum_positive;1.0
+sum_even;a_even,b_even -> sum_even;1.0
+sum_div_2;sum_even -> divisible_by_2;1.0
