@@ -1,1 +1,1 @@
-is_oxidizer
+ is_metal_oxide

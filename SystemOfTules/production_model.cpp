@@ -7,6 +7,10 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_set>
+#include <algorithm>
+#include <queue>
+#include <memory>
+#include <limits>
 
 #include "production_model.h"
 
@@ -315,7 +319,7 @@ namespace IMD {
 		std::string item;
 		while (std::getline(ss, item, delimeter))
 			result.push_back(trim(item)); // Разбиение и обрезание каждого токена
-		
+
 		return result;
 	}
 
@@ -345,6 +349,7 @@ namespace IMD {
 
 				// Применение правила
 				used_rules.insert(rule_id);
+
 				auto output_fact = pm.get_subject_fact(rule.get_output_fact());
 				pm.add_working_fact(output_fact);
 				if (output_fact.get_id() == target_fact_id) return true;
@@ -352,5 +357,264 @@ namespace IMD {
 		}
 
 		return false;
+	}
+
+	class node {
+	public:
+		enum class status_type { FALSE, UNKNOWN, TRUE }; // Статус узла: опровергнут / не определён / доказан
+		enum class kind_type { OR, AND }; // Тип узла: OR — факт (ИЛИ), AND — правило (И)
+
+	private:
+		kind_type __kind; // Тип узла
+		status_type __status; // Статус узла
+		std::string __id; // ID узла (Fact для OR, Rule для AND)
+
+		long long __heuristic; // Эвристическая оценка
+		std::unordered_set<std::string> __path; // ID фактов на пути от корня (защита от циклов)
+
+		node* __parent = NULL; // Родитель узла
+		std::vector<std::shared_ptr<node>> __children; // Дети узла
+	public:
+
+		// Конструктор узла
+		node(kind_type type, const std::string& id, const std::unordered_set<std::string>& path)
+			: __kind(type), __id(id), __path(path), __heuristic(std::numeric_limits<long long>::max()), __status(status_type::UNKNOWN) {
+		}
+
+		// Проверка, является ли узел листом
+		bool leaf() const {
+			return this->__children.empty();
+		}
+
+		// Получение типа узла
+		kind_type get_kind() const noexcept {
+			return this->__kind;
+		}
+		// Получение статуса узла
+		status_type get_status() const noexcept {
+			return this->__status;
+		}
+		// Получение ID узла
+		const std::string& get_id() const noexcept {
+			return this->__id;
+		}
+		// Получение эвристической оценки узла
+		long long get_heuristic() const noexcept {
+			return this->__heuristic;
+		}
+		// Получение пути от корня до текущего узла
+		const std::unordered_set<std::string>& get_path() const noexcept {
+			return this->__path;
+		}
+		// Получение родителя узла
+		node* get_parent() const noexcept {
+			return this->__parent;
+		}
+		// Получение детей узла
+		const std::vector<std::shared_ptr<node>>& get_children() const noexcept {
+			return this->__children;
+		}
+		// Установка статуса узла
+		void set_status(status_type status) noexcept {
+			this->__status = status;
+		}
+		// Добавление ребёнка
+		void add_child(std::shared_ptr<node> child) {
+			child->__parent = this;
+			this->__children.push_back(std::move(child));
+		}
+		// Установка эвристической оценки
+		void set_heuristic(long long heuristic) noexcept {
+			this->__heuristic = heuristic;
+		}
+	};
+
+	// Подсчёт эвристической оценки AND-узла (число недоказанных посылок)
+	long long compute_and_heuristic(const production_model& pm,
+		const std::unordered_map<std::string, node::status_type>& working_fact_status,
+		const std::shared_ptr<node>& and_node) {
+		auto rule_it = pm.get_rules().find(and_node->get_id()); // Итератор на узел правила
+		if (rule_it == pm.get_rules().end()) return std::numeric_limits<long long>::max();
+
+		long long result(0); // Число недоказанных посылок
+		for (const auto& input_fact_id : rule_it->second.get_input_facts()) {
+			auto it = working_fact_status.find(input_fact_id);
+			if (it == working_fact_status.end() || it->second != node::status_type::TRUE) ++result;
+		}
+		return result; // Чем меньше недоказанных посылок, тем ближе правило к срабатыванию
+	}
+
+	// Эвристика эвристической оценки OR-узла (минимум по детям-правилам)
+	long long compute_or_heuristic(const std::shared_ptr<node>& or_node) {
+		if (or_node->get_status() == node::status_type::TRUE) return 0; // Уже доказан
+		if (or_node->get_children().empty()) return std::numeric_limits<long long>::max(); // Нечем доказать
+
+		long long result = std::numeric_limits<long long>::max();
+		for (const auto& c : or_node->get_children()) result = std::min(result, c->get_heuristic()); // Минимальная стоимость среди детей
+
+		return result;
+	}
+
+	// Создание OR-узла (факта)
+	static std::shared_ptr<node> create_fact_node(const std::string& fact_id,
+		const std::unordered_set<std::string>& path,
+		const std::unordered_map<std::string, node::status_type>& working_fact_status) {
+		auto n = std::make_shared<node>(node::kind_type::OR, fact_id, path);
+		auto it = working_fact_status.find(fact_id);
+
+		if (it != working_fact_status.end() && it->second == node::status_type::TRUE)
+			n->set_status(node::status_type::TRUE); // Аксиома сразу TRUE
+
+		return n;
+	}
+
+	// Раскрытие OR-узла: факт -> правила -> факты
+	std::vector<std::shared_ptr<node>> expand(const production_model& pm,
+		const std::unordered_map<std::string, std::vector<std::string>>& rules_by_result,
+		const std::unordered_map<std::string, node::status_type>& working_fact_status,
+		const std::shared_ptr<node>& n) {
+
+		std::vector<std::shared_ptr<node>> result; // Созданные AND-узлы (правила)
+		if (n->get_path().count(n->get_id())) return result; // // Факт уже на пути от корня — цикл, не раскрываем
+
+		auto it = rules_by_result.find(n->get_id()); // Ищем правила, выводящие этот факт
+		if (it == rules_by_result.end()) return result; // Правил нет — факт нечем доказать
+
+		std::unordered_set<std::string> new_path = n->get_path(); // Копия пути от корня
+		new_path.insert(n->get_id()); // Добавляем текущий факт в путь
+
+		for (const auto& rule_id : it->second) { // Все правила, выводящие факт
+			const auto& rule = pm.get_rule(rule_id);
+			auto and_node = std::make_shared<node>(node::kind_type::AND, rule_id, new_path); // Создаём AND-узел (правило)
+
+			for (const auto& input_fact_id : rule.get_input_facts()) // Дети AND-узла — посылки правила
+				and_node->add_child(create_fact_node(input_fact_id, new_path, working_fact_status)); // // Создаём OR-узел для каждой посылки
+
+			and_node->set_heuristic(compute_and_heuristic(pm, working_fact_status, and_node));
+			result.push_back(std::move(and_node));
+		}
+
+		return result;
+	}
+
+	// Пересчёт эвристических оценок и статуса вверх по родителям
+	void recompute_upwards(const production_model& pm,
+		std::unordered_map<std::string, node::status_type>& working_fact_status,
+		std::unordered_map<std::string, node::status_type>& rule_status,
+		node* start) {
+		node* current_node = start;
+		while (current_node) { // Идём вверх по родителям до корня
+			// Пересчёт эвристики
+			if (current_node->get_kind() == node::kind_type::AND) { // AND: число недоказанных посылок
+				long long undone(0);
+				auto rule_it = pm.get_rules().find(current_node->get_id());
+				if (rule_it != pm.get_rules().end())
+					for (const auto& premise_id : rule_it->second.get_input_facts()) {
+						auto it = working_fact_status.find(premise_id);
+						if (it == working_fact_status.end() || it->second != node::status_type::TRUE) ++undone;
+					}
+				current_node->set_heuristic(undone);
+			}
+			else if (!current_node->get_children().empty()) { // OR: min по детям
+				long long best = std::numeric_limits<long long>::max();
+				for (const auto& c : current_node->get_children()) best = std::min(best, c->get_heuristic());
+				current_node->set_heuristic(best);
+			}
+
+			// Пересчёт статуса
+			if (!current_node->get_children().empty()) {
+				int count_true(0), count_false(0), count_unknown(0); // Счётчики по статусам детей
+				for (const auto& c : current_node->get_children()) { // Обход всех детей
+					switch (c->get_status()) {
+					case node::status_type::TRUE: ++count_true; break;
+					case node::status_type::FALSE: ++count_false; break;
+					case node::status_type::UNKNOWN: ++count_unknown; break;
+					}
+				}
+				int total = (int)current_node->get_children().size(); // Общее число детей
+				node::status_type next = current_node->get_status(); // Новый статус - по умолчанию, не меняется
+				if (current_node->get_kind() == node::kind_type::OR) {
+					if (count_true > 0) next = node::status_type::TRUE; // Хотя бы один TRUE
+					else if (count_false == total) next = node::status_type::FALSE; // Все FALSE
+				}
+				else {
+					if (count_true == total) next = node::status_type::TRUE; // Все TRUE
+					else if (count_false > 0) next = node::status_type::FALSE; // Хотя бы один FALSE
+				}
+				current_node->set_status(next);
+				if (current_node->get_kind() == node::kind_type::OR) working_fact_status[current_node->get_id()] = next;
+				else rule_status[current_node->get_id()] = next;
+			}
+			current_node = current_node->get_parent();
+		}
+	}
+	bool backward_chaining(production_model& pm,
+		const std::string& target_fact_id) {
+		std::unordered_map<std::string, std::vector<std::string>> rules_by_result;
+		for (const auto& [rule_id, rule] : pm.get_rules())
+			rules_by_result[rule.get_output_fact()].push_back(rule_id);
+
+		std::unordered_map<std::string, node::status_type> working_fact_status; // Статусы фактов (глобальные)
+		std::unordered_map<std::string, node::status_type> rule_status; // Статусы правил (глобальные)
+		for (const auto& [id, f] : pm.get_subject_facts()) working_fact_status[id] = node::status_type::UNKNOWN; // Все факты — UNKNOWN
+		for (const auto& [id, r] : pm.get_rules()) rule_status[id] = node::status_type::UNKNOWN; // Все правила — UNKNOWN
+		for (const auto& [id, f] : pm.get_axioms()) working_fact_status[id] = node::status_type::TRUE; // Аксиомы — TRUE
+
+		// Компаратор очереди с приоритетом: OR выше AND, AND — дорогие первыми, OR — дешёвые первыми
+		auto cmp = [](const std::shared_ptr<node>& a, const std::shared_ptr<node>& b) {
+			// OR-узлы (факты) всегда выше AND-узлов (правил) — сначала раскрываем факты
+			if (a->get_kind() != b->get_kind()) {
+				return a->get_kind() == node::kind_type::AND; // AND ниже OR
+			}
+			if (a->get_kind() == node::kind_type::AND) {
+				return a->get_heuristic() < b->get_heuristic(); // AND: большая эвристика — выше приоритет (max-heap)
+			}
+			return a->get_heuristic() > b->get_heuristic(); // OR: меньшая эвристика — выше приоритет (min-heap)
+			};
+
+		auto root = create_fact_node(target_fact_id, {}, working_fact_status); // Корень — OR-узел цели
+		std::priority_queue<std::shared_ptr<node>, std::vector<std::shared_ptr<node>>, decltype(cmp)> pq(cmp); // Очередь с приоритетом по эвристике
+		pq.push(root);
+
+		while (!pq.empty()) {
+			auto n = pq.top(); pq.pop();
+
+			if (n->get_kind() == node::kind_type::OR) { // Текущий узел описывает факт
+
+				// Узел уже доказан — пересчёт вверх
+				if (n->get_status() == node::status_type::TRUE && n->leaf()) {
+					recompute_upwards(pm, working_fact_status, rule_status, n.get());
+					if (root->get_status() == node::status_type::TRUE) break; // Цель доказана
+					continue;
+				}
+
+				// Раскрытие узла
+				auto children = expand(pm, rules_by_result, working_fact_status, n);
+				if (children.empty()) { // Нет детей — провал
+					n->set_status(node::status_type::FALSE);
+					working_fact_status[n->get_id()] = node::status_type::FALSE;
+
+					recompute_upwards(pm, working_fact_status, rule_status, n.get());
+
+					if (root->get_status() == node::status_type::FALSE) break; // Цель недоказуема
+					continue;
+				}
+
+				// Добавление детей (сначала все, потом пересчёт)
+				for (const auto& child : children) {
+					n->add_child(child);
+					pq.push(child); // AND-узел
+					for (const auto& premise : child->get_children())
+						pq.push(premise); // OR-посылки
+				}
+
+				for (const auto& child : children)
+					recompute_upwards(pm, working_fact_status, rule_status, child.get());
+			}
+			else // Текущий узел описывает правило
+				recompute_upwards(pm, working_fact_status, rule_status, n.get()); // Дети уже созданы и положены в очередь - просто пересчитываем вверх
+		}
+
+		return root->get_status() == node::status_type::TRUE;
 	}
 }

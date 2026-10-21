@@ -64,7 +64,10 @@ int main(int argc, char* argv[]) {
             std::cout << (reachness ? "ЦЕЛЬ ДОСТИГНУТА\n" : "ЦЕЛЬ НЕ ДОСТИГНУТА\n");
         }
         else if (mode == 2) {
-            std::cout << "\nОбратный вывод пока не реализован\n";
+            bool reachness = IMD::backward_chaining(pm, target); // Обратный вывод
+
+            std::cout << "\n-------- ОБРАТНЫЙ ВЫВОД --------\n";
+            std::cout << (reachness ? "ЦЕЛЬ ДОСТИГНУТА\n" : "ЦЕЛЬ НЕ ДОСТИГНУТА\n");
         }
         else {
             std::cout << "Неверный режим\n";
