@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="SystemOfTules/SystemOfTules.vcxproj" />
+  <Project Path="SystemOfTules/SystemOfTules.vcxproj" Id="1add57ef-fb79-40b5-88ca-b1a649596ce7" />
 </Solution>

@@ -18,12 +18,12 @@
     <ClCompile Include="program.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="system_of_rules.cpp">
+    <ClCompile Include="production_model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="system_of_rules.h">
+    <ClInclude Include="production_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="constants.h">
@@ -31,7 +31,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="facts.txt" />
+    <Text Include="axioms.txt" />
     <Text Include="rules.txt" />
+    <Text Include="targets.txt" />
+    <Text Include="subject_domain.txt" />
   </ItemGroup>
 </Project>

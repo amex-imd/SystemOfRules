@@ -1,3 +1,125 @@
-sum_positive;a_positive,b_positive -> sum_positive;1.0
-sum_even;a_even,b_even -> sum_even;1.0
-sum_div_2;sum_even -> divisible_by_2;1.0
+r01;is_substance -> is_complex;1.0;вещество может быть сложным
+r02;is_substance -> is_simple;1.0;вещество может быть простым
+r03;is_metal -> is_simple;1.0;металл — простое вещество
+r04;is_nonmetal -> is_simple;1.0;неметалл — простое вещество
+r05;is_oxide -> is_complex;1.0;оксид — сложное вещество
+r06;is_acid -> is_complex;1.0;кислота — сложное вещество
+r07;is_base -> is_complex;1.0;основание — сложное вещество
+r08;is_salt -> is_complex;1.0;соль — сложное вещество
+r09;is_alkali_metal -> is_metal;1.0;щелочной металл — металл
+r10;is_alkaline_earth_metal -> is_metal;1.0;щёлочноземельный металл — металл
+r11;is_transition_metal -> is_metal;1.0;переходный металл — металл
+r12;is_halogen -> is_nonmetal;1.0;галоген — неметалл
+r13;is_noble_gas -> is_nonmetal;1.0;благородный газ — неметалл
+r14;is_metal_oxide -> is_oxide;1.0;оксид металла — оксид
+r15;is_nonmetal_oxide -> is_oxide;1.0;оксид неметалла — оксид
+r16;is_amphoteric_oxide -> is_oxide;1.0;амфотерный оксид — оксид
+r17;is_basic_oxide -> is_oxide;1.0;основный оксид — оксид
+r18;is_acidic_oxide -> is_oxide;1.0;кислотный оксид — оксид
+r19;is_peroxide -> is_oxide;1.0;пероксид — оксид
+r20;is_oxygen_acid -> is_acid;1.0;кислородсодержащая кислота — кислота
+r21;is_oxygenfree_acid -> is_acid;1.0;бескислородная кислота — кислота
+r22;is_strong_acid -> is_acid;1.0;сильная кислота — кислота
+r23;is_weak_acid -> is_acid;1.0;слабая кислота — кислота
+r24;is_soluble_base -> is_base;1.0;растворимое основание — основание
+r25;is_insoluble_base -> is_base;1.0;нерастворимое основание — основание
+r26;is_strong_base -> is_base;1.0;сильное основание — основание
+r27;is_weak_base -> is_base;1.0;слабое основание — основание
+r28;is_normal_salt -> is_salt;1.0;средняя соль — соль
+r29;is_acidic_salt -> is_salt;1.0;кислая соль — соль
+r30;is_basic_salt -> is_salt;1.0;основная соль — соль
+r31;is_soluble_salt -> is_salt;1.0;растворимая соль — соль
+r32;is_insoluble_salt -> is_salt;1.0;нерастворимая соль — соль
+r33;is_oxide,is_metal -> is_metal_oxide;1.0;оксид + металл = оксид металла
+r34;is_oxide,is_nonmetal -> is_nonmetal_oxide;1.0;оксид + неметалл = оксид неметалла
+r35;is_metal_oxide,is_alkali_metal -> is_basic_oxide;1.0;оксид щелочного металла — основный
+r36;is_metal_oxide,is_alkaline_earth_metal -> is_basic_oxide;1.0;оксид щёлочноземельного металла — основный
+r37;is_metal_oxide,is_transition_metal -> is_basic_oxide;1.0;оксид переходного металла (упрощение)
+r38;is_metal_oxide,is_amphoteric_oxide -> is_amphoteric_oxide;1.0;амфотерный оксид металла
+r39;is_nonmetal_oxide,is_acidic_oxide -> is_acidic_oxide;1.0;оксид неметалла — кислотный
+r40;is_oxide,is_amphoteric_oxide -> is_amphoteric_oxide;1.0;амфотерный оксид
+r41;is_acid,is_oxygen_acid -> is_oxygen_acid;1.0;кислородсодержащая кислота
+r42;is_acid,is_oxygenfree_acid -> is_oxygenfree_acid;1.0;бескислородная кислота
+r43;is_acid,is_strong_acid -> is_strong_acid;1.0;сильная кислота
+r44;is_acid,is_weak_acid -> is_weak_acid;1.0;слабая кислота
+r45;is_base,is_soluble_base -> is_soluble_base;1.0;растворимое основание
+r46;is_base,is_insoluble_base -> is_insoluble_base;1.0;нерастворимое основание
+r47;is_base,is_strong_base -> is_strong_base;1.0;сильное основание
+r48;is_base,is_weak_base -> is_weak_base;1.0;слабое основание
+r49;is_salt,is_normal_salt -> is_normal_salt;1.0;средняя соль
+r50;is_salt,is_acidic_salt -> is_acidic_salt;1.0;кислая соль
+r51;is_salt,is_basic_salt -> is_basic_salt;1.0;основная соль
+r52;is_salt,is_soluble_salt -> is_soluble_salt;1.0;растворимая соль
+r53;is_salt,is_insoluble_salt -> is_insoluble_salt;1.0;нерастворимая соль
+r54;is_metal_oxide -> reacts_with_acid;1.0;оксид металла + кислота
+r55;is_metal_oxide -> has_basic_properties;1.0;оксид металла — основные свойства
+r56;is_metal_oxide -> reacts_with_water;1.0;оксид металла + вода (упрощение)
+r57;is_nonmetal_oxide -> reacts_with_base;1.0;оксид неметалла + основание
+r58;is_nonmetal_oxide -> has_acidic_properties;1.0;оксид неметалла — кислотные свойства
+r59;is_nonmetal_oxide -> reacts_with_water;1.0;оксид неметалла + вода (упрощение)
+r60;is_amphoteric_oxide -> has_amphoteric_properties;1.0;амфотерный оксид
+r61;is_amphoteric_oxide -> reacts_with_acid;1.0;амфотерный оксид + кислота
+r62;is_amphoteric_oxide -> reacts_with_base;1.0;амфотерный оксид + основание
+r63;is_basic_oxide -> has_basic_properties;1.0;основный оксид
+r64;is_acidic_oxide -> has_acidic_properties;1.0;кислотный оксид
+r65;is_basic_oxide -> reacts_with_acid;1.0;основный оксид + кислота
+r66;is_acidic_oxide -> reacts_with_base;1.0;кислотный оксид + основание
+r67;is_acid -> reacts_with_base;1.0;кислота + основание
+r68;is_acid -> reacts_with_metal;1.0;кислота + металл
+r69;is_acid -> reacts_with_oxide;1.0;кислота + оксид
+r70;is_acid -> has_acidic_properties;1.0;кислота — кислотные свойства
+r71;is_acid -> is_corrosive;1.0;кислота — коррозионно-активна
+r72;is_acid -> is_used_in_lab;1.0;кислота — в лаборатории
+r73;is_strong_acid -> is_corrosive;1.0;сильная кислота — коррозионно-активна
+r74;is_strong_acid -> reacts_with_metal;1.0;сильная кислота + металл
+r75;is_weak_acid -> is_stable;1.0;слабая кислота — стабильна (упрощение)
+r76;is_base -> reacts_with_acid;1.0;основание + кислота
+r77;is_base -> has_basic_properties;1.0;основание — основные свойства
+r78;is_base -> is_corrosive;1.0;основание — коррозионно-активно (упрощение)
+r79;is_base -> is_used_in_lab;1.0;основание — в лаборатории
+r80;is_soluble_base -> reacts_with_oxide;1.0;щёлочь + оксид
+r81;is_soluble_base -> is_corrosive;1.0;щёлочь — коррозионно-активна
+r82;is_insoluble_base -> reacts_with_acid;1.0;нерастворимое основание + кислота
+r83;is_strong_base -> is_corrosive;1.0;сильное основание — коррозионно-активно
+r84;is_salt -> reacts_with_acid;1.0;соль + кислота (упрощение)
+r85;is_salt -> reacts_with_base;1.0;соль + основание (упрощение)
+r86;is_salt -> reacts_with_metal;1.0;соль + металл (упрощение)
+r87;is_salt -> is_used_in_lab;1.0;соль — в лаборатории
+r88;is_salt -> is_used_in_industry;1.0;соль — в промышленности
+r89;is_soluble_salt -> is_stable;1.0;растворимая соль — стабильна (упрощение)
+r90;is_insoluble_salt -> forms_precipitate;1.0;нерастворимая соль — осадок
+r91;is_metal -> is_reducer;1.0;металл — восстановитель
+r92;is_metal -> is_used_in_industry;1.0;металл — в промышленности
+r93;is_nonmetal -> is_oxidizer;1.0;неметалл — окислитель (упрощение)
+r94;is_halogen -> is_toxic;1.0;галоген — токсичен
+r95;is_halogen -> is_oxidizer;1.0;галоген — окислитель
+r96;is_noble_gas -> is_stable;1.0;благородный газ — стабилен
+r97;is_alkali_metal -> is_corrosive;1.0;щелочной металл — коррозионно-активен
+r98;is_alkaline_earth_metal -> is_corrosive;1.0;щёлочноземельный металл — коррозионно-активен (упрощение)
+r99;is_transition_metal -> is_used_in_industry;1.0;переходный металл — в промышленности
+r100;reacts_with_acid,reacts_with_base -> has_amphoteric_properties;1.0;реагирует с кислотой и основанием — амфотерность
+r101;is_acid,is_base -> forms_salt;1.0;кислота + основание = соль
+r102;is_acid,is_base -> forms_water;1.0;кислота + основание = вода
+r103;is_metal_oxide,is_acid -> forms_salt;1.0;оксид металла + кислота = соль
+r104;is_metal_oxide,is_acid -> forms_water;1.0;оксид металла + кислота = вода
+r105;is_nonmetal_oxide,is_base -> forms_salt;1.0;оксид неметалла + основание = соль
+r106;is_nonmetal_oxide,is_base -> forms_water;1.0;оксид неметалла + основание = вода
+r107;is_metal,is_acid -> forms_gas;1.0;металл + кислота = газ (водород)
+r108;is_metal,is_acid -> displaces_hydrogen;1.0;металл вытесняет водород из кислоты
+r109;is_metal,is_salt -> displaces_metal;1.0;металл вытесняет металл из соли (упрощение)
+r110;is_strong_acid,is_metal -> forms_gas;1.0;сильная кислота + металл = газ
+r111;is_strong_base,is_acid -> forms_salt;1.0;сильное основание + кислота = соль
+r112;is_strong_base,is_acid -> forms_water;1.0;сильное основание + кислота = вода
+r113;is_toxic,is_used_in_lab -> is_used_in_industry;1.0;токсичное лабораторное — в промышленности (пример)
+r114;is_oxidizer,is_reducer -> is_unstable;1.0;окислитель + восстановитель = нестабильно (пример)
+r115;is_stable,is_unstable -> is_unstable;1.0;стабильное + нестабильное = нестабильное (пример)
+r116;is_soluble_base,is_soluble_salt -> forms_precipitate;1.0;щёлочь + растворимая соль = осадок (пример)
+r117;is_insoluble_base,is_acid -> forms_salt;1.0;нерастворимое основание + кислота = соль
+r118;is_insoluble_base,is_acid -> forms_water;1.0;нерастворимое основание + кислота = вода
+r119;is_amphoteric_oxide,is_acid -> forms_salt;1.0;амфотерный оксид + кислота = соль
+r120;is_amphoteric_oxide,is_base -> forms_salt;1.0;амфотерный оксид + основание = соль
+r121;is_acidic_oxide,is_base -> forms_salt;1.0;кислотный оксид + основание = соль
+r122;is_basic_oxide,is_acid -> forms_salt;1.0;основный оксид + кислота = соль
+r123;is_oxide,is_water -> reacts_with_water;1.0;оксид + вода (пример, is_water нет в домене — см. ниже)
+r124;is_peroxide -> is_oxidizer;1.0;пероксид — окислитель
+r125;is_peroxide -> is_unstable;1.0;пероксид — нестабилен (упрощение)

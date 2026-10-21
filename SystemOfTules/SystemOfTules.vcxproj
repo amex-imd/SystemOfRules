@@ -140,15 +140,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="program.cpp" />
-    <ClCompile Include="system_of_rules.cpp" />
+    <ClCompile Include="production_model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constants.h" />
-    <ClInclude Include="system_of_rules.h" />
+    <ClInclude Include="production_model.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="facts.txt" />
+    <Text Include="subject_domain.txt" />
+    <Text Include="axioms.txt" />
     <Text Include="rules.txt" />
+    <Text Include="targets.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
